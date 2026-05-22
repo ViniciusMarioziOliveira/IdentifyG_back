@@ -39,7 +39,7 @@ def identify_game(pistas_usuario):
 def root():
     return jsonify({
         "status": "success",
-        "message": "DavyJonesBot - API Identificadora de Jogos (Modo Texto) funcionando!",
+        "message": "DavyJonesBot - API Identificadora de Jogos funcionando!",
         "version": "1.0"
     }), 200
 
