@@ -1,13 +1,12 @@
 import os
-import json
 from flask import Flask, jsonify, request
 from flask_cors import CORS
 from google import genai
 from google.genai import types
 from dotenv import load_dotenv
 
-# Importando o novo esquema de jogos e instruções do Davy Jones
-from config import JOGO_SCHEMA, SYSTEM_INSTRUCTION
+# Importando apenas as instruções do Davy Jones do config.py
+from config import SYSTEM_INSTRUCTION
 
 # Carrega as variáveis de ambiente e inicia o Gemini
 load_dotenv()
@@ -21,18 +20,17 @@ CORS(app)
 def identify_game(pistas_usuario):
     """
     Envia a descrição/pistas do usuário para o Gemini descobrir qual é o jogo,
-    utilizando a personalidade e as regras do DavyJonesBot.
+    retornando uma resposta puramente em texto na voz do DavyJonesBot.
     """
     conteudo_prompt = f"Tente identificar o jogo com base nestas pistas e detalhes descritos pelo usuário: '{pistas_usuario}'."
     
-    # Faz a chamada para o modelo pedindo uma resposta estruturada em JSON baseado no JOGO_SCHEMA
+    # Faz a chamada para o modelo pedindo uma resposta simples em texto livre
     response = client.models.generate_content(
         model="gemini-3-flash-preview",
         contents=conteudo_prompt,
         config=types.GenerateContentConfig(
             system_instruction=SYSTEM_INSTRUCTION,
-            response_mime_type="application/json", # Força a saída em formato JSON
-            response_schema=JOGO_SCHEMA,          # Segue o esquema do config.py
+            # Removemos o response_mime_type e o response_schema para aceitar texto livre
         )
     )
     return response.text
@@ -41,7 +39,7 @@ def identify_game(pistas_usuario):
 def root():
     return jsonify({
         "status": "success",
-        "message": "DavyJonesBot - API Identificadora de Jogos funcionando!",
+        "message": "DavyJonesBot - API Identificadora de Jogos (Modo Texto) funcionando!",
         "version": "1.0"
     }), 200
 
@@ -66,16 +64,13 @@ def identify():
         }), 400
     
     try:
-        # Pede para o Gemini identificar os jogos (retorna como string JSON)
-        resultado_json_string = identify_game(pistas_usuario)
-        
-        # Converte a string JSON em Dicionário Python para o Flask organizar a resposta
-        dados_jogos = json.loads(resultado_json_string)
+        # Pede para o Gemini identificar os jogos (retorna como string de texto puro)
+        resultado_texto = identify_game(pistas_usuario)
         
         return jsonify({
             "status": "success",
             "pistas_enviadas": pistas_usuario,
-            "resultado": dados_jogos
+            "resultado": resultado_texto # Retorna o texto formatado da IA diretamente
         }), 200
         
     except Exception as e:
