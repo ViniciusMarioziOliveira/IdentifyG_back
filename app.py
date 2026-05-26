@@ -26,7 +26,7 @@ def identify_game(pistas_usuario):
     
     # Faz a chamada para o modelo pedindo uma resposta simples em texto livre
     response = client.models.generate_content(
-        model="gemini-3.5-flash",
+        model="gemini-3.1-flash-lite",
         contents=conteudo_prompt,
         config=types.GenerateContentConfig(
             system_instruction=SYSTEM_INSTRUCTION,
